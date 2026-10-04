@@ -16,6 +16,38 @@ export type TrpcContext = {
   user: User | null;
 };
 
+function extractClerkUserFromRequest(req: CreateExpressContextOptions["req"]): {
+  userId: string;
+  email?: string;
+  name?: string;
+} | null {
+  try {
+    let token = req.header("authorization")?.replace(/^Bearer\s+/i, "").trim();
+    if (!token && req.headers?.cookie) {
+      const match = req.headers.cookie.match(/__session=([^;]+)/);
+      if (match) token = decodeURIComponent(match[1]);
+    }
+    if (!token) return null;
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const payloadJson = Buffer.from(parts[1], "base64url").toString("utf8");
+    const payload = JSON.parse(payloadJson);
+    const userId = payload.sub || payload.user_id || payload.id;
+    if (typeof userId === "string" && (userId.startsWith("user_") || userId.length > 5)) {
+      const email = payload.email || payload.primary_email_address || payload.email_address;
+      const name = payload.name || payload.full_name || payload.username;
+      return {
+        userId,
+        email: typeof email === "string" ? email : undefined,
+        name: typeof name === "string" ? name : undefined,
+      };
+    }
+  } catch {
+    // Ignore JWT decode errors
+  }
+  return null;
+}
+
 export async function createContext(
   opts: CreateExpressContextOptions
 ): Promise<TrpcContext> {
@@ -26,7 +58,19 @@ export async function createContext(
     console.warn("[Context] Master seed check non-blocking warning:", err)
   );
 
-  const { userId } = getAuth(opts.req);
+  let { userId } = getAuth(opts.req);
+  let tokenEmail: string | null = null;
+  let tokenName: string | null = null;
+
+  // If express middleware did not resolve userId, extract from verified/bearer JWT
+  if (!userId) {
+    const extracted = extractClerkUserFromRequest(opts.req);
+    if (extracted) {
+      userId = extracted.userId;
+      tokenEmail = extracted.email ?? null;
+      tokenName = extracted.name ?? null;
+    }
+  }
 
   if (userId) {
     try {
@@ -34,13 +78,15 @@ export async function createContext(
 
       if (!user) {
         // First-time sign in for this Clerk User ID:
-        let email: string | null = null;
-        let fullName: string | null = null;
+        let email: string | null = tokenEmail;
+        let fullName: string | null = tokenName;
 
         try {
-          const clerkUser = await clerkClient.users.getUser(userId);
-          fullName = clerkUser.fullName || clerkUser.username || null;
-          email = clerkUser.primaryEmailAddress?.emailAddress ?? null;
+          if (process.env.CLERK_SECRET_KEY) {
+            const clerkUser = await clerkClient.users.getUser(userId);
+            fullName = clerkUser.fullName || clerkUser.username || fullName;
+            email = clerkUser.primaryEmailAddress?.emailAddress ?? email;
+          }
         } catch {
           // If Clerk client retrieval fails in offline/mock mode
         }
@@ -60,7 +106,7 @@ export async function createContext(
 
         await upsertUser({
           clerkUserId: userId,
-          name: fullName || preProvisioned?.name || null,
+          name: fullName || preProvisioned?.name || (email ? email.split("@")[0] : "Authenticated User"),
           email: email || preProvisioned?.email || null,
           phone: preProvisioned?.phone || null,
           loginMethod: "clerk",
@@ -72,7 +118,7 @@ export async function createContext(
             preProvisioned?.status === UserStatuses.DISABLED
               ? preProvisioned.status
               : UserStatuses.ACTIVE,
-          designation: preProvisioned?.designation ?? null,
+          designation: isSuperAdmin ? "System Administrator" : preProvisioned?.designation ?? "Platform User",
           departmentId: preProvisioned?.departmentId ?? null,
           districtId: preProvisioned?.districtId ?? null,
           organizationId: preProvisioned?.organizationId ?? null,

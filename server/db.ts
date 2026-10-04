@@ -221,12 +221,15 @@ export async function ensureMasterSeedData(): Promise<boolean> {
   }
 }
 
+const inMemoryUsersByClerkId = new Map<string, schema.User>();
+const inMemoryUsersByEmail = new Map<string, schema.User>();
+const inMemoryUsersById = new Map<number, schema.User>();
+let inMemoryUserIdCounter = 1000;
+
 export async function upsertUser(user: Partial<InsertUser>): Promise<void> {
   if (!user.clerkUserId) {
     throw new Error("Clerk user ID is required for upsert");
   }
-  const db = await getDb();
-  if (!db) return;
 
   // Check if a pre-provisioned user exists by email or clerkUserId
   let existing = await getUserByClerkUserId(user.clerkUserId);
@@ -249,28 +252,6 @@ export async function upsertUser(user: Partial<InsertUser>): Promise<void> {
       ? UserStatuses.ACTIVE
       : (existing?.status ?? UserStatuses.ACTIVE));
 
-  // If upgrading a pre-provisioned invitation account by email to official clerk user ID
-  if (existing && existing.clerkUserId !== user.clerkUserId) {
-    await db
-      .update(users)
-      .set({
-        clerkUserId: user.clerkUserId,
-        name: user.name ?? existing.name,
-        role: resolvedRole as schema.User["role"],
-        status: resolvedStatus,
-        designation: user.designation ?? existing.designation,
-        departmentId: user.departmentId ?? existing.departmentId,
-        districtId: user.districtId ?? existing.districtId,
-        organizationId: user.organizationId ?? existing.organizationId,
-        jurisdiction: user.jurisdiction ?? existing.jurisdiction,
-        invitationAcceptedAt: user.invitationAcceptedAt ?? (existing.status === UserStatuses.INVITED ? new Date() : existing.invitationAcceptedAt),
-        lastSignedIn: user.lastSignedIn ?? new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, existing.id));
-    return;
-  }
-
   const values: InsertUser = {
     clerkUserId: user.clerkUserId,
     name: user.name ?? existing?.name ?? null,
@@ -292,60 +273,163 @@ export async function upsertUser(user: Partial<InsertUser>): Promise<void> {
     lastSignedIn: user.lastSignedIn ?? new Date(),
   };
 
-  const updateSet: Partial<InsertUser> = {
-    name: values.name,
-    email: values.email,
-    phone: values.phone,
-    loginMethod: values.loginMethod,
-    role: values.role,
-    status: values.status,
-    designation: values.designation,
-    departmentId: values.departmentId,
-    districtId: values.districtId,
-    organizationId: values.organizationId,
-    jurisdiction: values.jurisdiction,
-    invitationAcceptedAt: values.invitationAcceptedAt,
-    lastSignedIn: values.lastSignedIn,
+  // 1. Maintain in-memory fallback state so offline or latched connections always resolve
+  const fallbackRecord: schema.User = {
+    id: existing?.id ?? ++inMemoryUserIdCounter,
+    clerkUserId: values.clerkUserId,
+    name: values.name ?? null,
+    email: values.email ?? null,
+    phone: values.phone ?? null,
+    loginMethod: values.loginMethod ?? "clerk",
+    role: (values.role as schema.User["role"]) ?? (PlatformRoles.CITIZEN as schema.User["role"]),
+    status: (values.status as schema.User["status"]) ?? ("ACTIVE" as schema.User["status"]),
+    designation: values.designation ?? null,
+    departmentId: values.departmentId ?? null,
+    districtId: values.districtId ?? null,
+    organizationId: values.organizationId ?? null,
+    jurisdiction: values.jurisdiction ?? null,
+    invitationSentAt: existing?.invitationSentAt ?? null,
+    invitationAcceptedAt: values.invitationAcceptedAt ?? null,
+    lastSignedIn: values.lastSignedIn ?? new Date(),
+    createdAt: existing?.createdAt ?? new Date(),
     updatedAt: new Date(),
   };
 
-  await db
-    .insert(users)
-    .values(values)
-    .onConflictDoUpdate({ target: users.clerkUserId, set: updateSet });
+  inMemoryUsersByClerkId.set(values.clerkUserId, fallbackRecord);
+  if (values.email) {
+    inMemoryUsersByEmail.set(values.email.trim().toLowerCase(), fallbackRecord);
+  }
+  inMemoryUsersById.set(fallbackRecord.id, fallbackRecord);
+
+  const db = await getDb();
+  if (!db) return;
+
+  try {
+    // If upgrading a pre-provisioned invitation account by email to official clerk user ID
+    if (existing && existing.clerkUserId !== user.clerkUserId) {
+      await db
+        .update(users)
+        .set({
+          clerkUserId: user.clerkUserId,
+          name: user.name ?? existing.name,
+          role: resolvedRole as schema.User["role"],
+          status: resolvedStatus,
+          designation: user.designation ?? existing.designation,
+          departmentId: user.departmentId ?? existing.departmentId,
+          districtId: user.districtId ?? existing.districtId,
+          organizationId: user.organizationId ?? existing.organizationId,
+          jurisdiction: user.jurisdiction ?? existing.jurisdiction,
+          invitationAcceptedAt: user.invitationAcceptedAt ?? (existing.status === UserStatuses.INVITED ? new Date() : existing.invitationAcceptedAt),
+          lastSignedIn: user.lastSignedIn ?? new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, existing.id));
+      return;
+    }
+
+    const updateSet: Partial<InsertUser> = {
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      loginMethod: values.loginMethod,
+      role: values.role,
+      status: values.status,
+      designation: values.designation,
+      departmentId: values.departmentId,
+      districtId: values.districtId,
+      organizationId: values.organizationId,
+      jurisdiction: values.jurisdiction,
+      invitationAcceptedAt: values.invitationAcceptedAt,
+      lastSignedIn: values.lastSignedIn,
+      updatedAt: new Date(),
+    };
+
+    const inserted = await db
+      .insert(users)
+      .values(values)
+      .onConflictDoUpdate({ target: users.clerkUserId, set: updateSet })
+      .returning();
+
+    if (inserted[0]) {
+      inMemoryUsersByClerkId.set(values.clerkUserId, inserted[0]);
+      if (inserted[0].email) {
+        inMemoryUsersByEmail.set(inserted[0].email.trim().toLowerCase(), inserted[0]);
+      }
+      inMemoryUsersById.set(inserted[0].id, inserted[0]);
+    }
+  } catch (err) {
+    console.warn("[Database] Postgres user upsert warning:", err);
+  }
 }
 
 export async function getUserByClerkUserId(clerkUserId: string) {
   const db = await getDb();
-  if (!db) return undefined;
-  const result = await db
-    .select()
-    .from(users)
-    .where(eq(users.clerkUserId, clerkUserId))
-    .limit(1);
-  return result[0];
+  if (db) {
+    try {
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.clerkUserId, clerkUserId))
+        .limit(1);
+      if (result[0]) {
+        inMemoryUsersByClerkId.set(clerkUserId, result[0]);
+        if (result[0].email) {
+          inMemoryUsersByEmail.set(result[0].email.trim().toLowerCase(), result[0]);
+        }
+        inMemoryUsersById.set(result[0].id, result[0]);
+        return result[0];
+      }
+    } catch (err) {
+      console.warn("[Database] getUserByClerkUserId fallback to memory:", err);
+    }
+  }
+  return inMemoryUsersByClerkId.get(clerkUserId);
 }
 
 export async function getUserByEmail(email: string) {
+  if (!email) return undefined;
+  const normalizedEmail = email.trim().toLowerCase();
   const db = await getDb();
-  if (!db || !email) return undefined;
-  const result = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email.trim().toLowerCase()))
-    .limit(1);
-  return result[0];
+  if (db) {
+    try {
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, normalizedEmail))
+        .limit(1);
+      if (result[0]) {
+        inMemoryUsersByEmail.set(normalizedEmail, result[0]);
+        if (result[0].clerkUserId) {
+          inMemoryUsersByClerkId.set(result[0].clerkUserId, result[0]);
+        }
+        inMemoryUsersById.set(result[0].id, result[0]);
+        return result[0];
+      }
+    } catch (err) {
+      console.warn("[Database] getUserByEmail fallback to memory:", err);
+    }
+  }
+  return inMemoryUsersByEmail.get(normalizedEmail);
 }
 
 export async function getUserById(id: number) {
   const db = await getDb();
-  if (!db) return undefined;
-  const result = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, id))
-    .limit(1);
-  return result[0];
+  if (db) {
+    try {
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, id))
+        .limit(1);
+      if (result[0]) {
+        inMemoryUsersById.set(id, result[0]);
+        return result[0];
+      }
+    } catch (err) {
+      console.warn("[Database] getUserById fallback to memory:", err);
+    }
+  }
+  return inMemoryUsersById.get(id);
 }
 
 function parseEvidence(value: string): string[] {
