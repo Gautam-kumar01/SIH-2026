@@ -583,16 +583,16 @@ export function CesiumSpatialViewer({
 
       try {
         const isSelectedExpr = selectedId
-          ? `(defined(\${feature['osm_id']}) && \${feature['osm_id']} === '${selectedId}') || (defined(\${feature['id']}) && \${feature['id']} === '${selectedId}')`
+          ? `(\${feature['osm_id']} === '${selectedId}' || \${feature['id']} === '${selectedId}')`
           : "false";
 
         if (mode === "height") {
           const isHighRise =
-            "(defined(${feature['cesium#estimatedHeight']}) && ${feature['cesium#estimatedHeight']} >= 35) || (defined(${feature['height']}) && ${feature['height']} >= 35) || (defined(${feature['building:height']}) && ${feature['building:height']} >= 35) || (defined(${feature['render_height']}) && ${feature['render_height']} >= 35)";
+            "${feature['cesium#estimatedHeight']} >= 35 || ${feature['height']} >= 35 || ${feature['building:height']} >= 35 || ${feature['render_height']} >= 35";
           const isMidRise =
-            "(defined(${feature['cesium#estimatedHeight']}) && ${feature['cesium#estimatedHeight']} >= 18) || (defined(${feature['height']}) && ${feature['height']} >= 18) || (defined(${feature['building:height']}) && ${feature['building:height']} >= 18) || (defined(${feature['render_height']}) && ${feature['render_height']} >= 18)";
+            "${feature['cesium#estimatedHeight']} >= 18 || ${feature['height']} >= 18 || ${feature['building:height']} >= 18 || ${feature['render_height']} >= 18";
           const isLowRise =
-            "(defined(${feature['cesium#estimatedHeight']}) && ${feature['cesium#estimatedHeight']} > 0) || (defined(${feature['height']}) && ${feature['height']} > 0) || (defined(${feature['building:height']}) && ${feature['building:height']} > 0) || (defined(${feature['render_height']}) && ${feature['render_height']} > 0)";
+            "${feature['cesium#estimatedHeight']} > 0 || ${feature['height']} > 0 || ${feature['building:height']} > 0 || ${feature['render_height']} > 0";
 
           osmBuildings.style = new cesiumRuntime.Cesium3DTileStyle({
             color: {
@@ -725,12 +725,14 @@ export function CesiumSpatialViewer({
     if (isOrbiting360) setIsOrbiting360(false);
     const target = targetPos ?? selectedBuildingData?.positionCartesian ?? getOrbitCenter();
     activeFocusTargetRef.current = target;
-    const range = Math.max(75, height * 2.8);
+    const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+    const range = isMobile ? Math.max(48, height * 2.1) : Math.max(75, height * 2.8);
+    const pitch = isMobile ? -0.55 : -0.62;
     viewer.camera.flyToBoundingSphere(new BoundingSphere(target, 0), {
-      offset: new HeadingPitchRange(viewer.camera.heading, -0.62, range),
+      offset: new HeadingPitchRange(viewer.camera.heading, pitch, range),
       duration: 0.75,
     });
-    setCurrentPitchDeg(-35);
+    setCurrentPitchDeg(Math.round((pitch * 180) / Math.PI));
   };
 
   useEffect(() => {
@@ -1343,9 +1345,11 @@ export function CesiumSpatialViewer({
               ? properties.name
               : "Source-backed PostGIS footprint";
 
+          const maxX = (viewer.canvas?.clientWidth || window.innerWidth) - 250;
+          const maxY = (viewer.canvas?.clientHeight || window.innerHeight) - 160;
           setHoverTooltip({
-            x: movement.endPosition.x + 14,
-            y: movement.endPosition.y + 14,
+            x: Math.max(10, Math.min(movement.endPosition.x + 14, maxX)),
+            y: Math.max(10, Math.min(movement.endPosition.y + 14, maxY)),
             name,
             id: ulpin ?? "Not available",
             height: h ? `${h.toFixed(1)} m` : "Not available",
@@ -1404,6 +1408,16 @@ export function CesiumSpatialViewer({
       setCurrentPitchDeg(pitchDeg);
     };
     viewer.camera.changed.addEventListener(onCameraChanged);
+
+    // Keep Cesium canvas crisp and properly synchronized on mobile resize/orientation changes
+    const resizeObserver = new ResizeObserver(() => {
+      if (!viewerRef.current || viewerRef.current.isDestroyed?.()) return;
+      viewerRef.current.resize();
+      viewerRef.current.scene.requestRender();
+    });
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
 
     // High-reliability Satellite World Imagery with fallback
     const loadSatelliteImagery = async () => {
@@ -1511,6 +1525,7 @@ export function CesiumSpatialViewer({
     }
     return () => {
       cancelled = true;
+      resizeObserver.disconnect();
       viewer.camera.changed.removeEventListener(onCameraChanged);
       osmBuildingsRef.current = null;
       selectedOsmFeatureRef.current = null;
@@ -2125,6 +2140,7 @@ export function CesiumSpatialViewer({
       setCurrentPitchDeg(-45);
     }
     if (command.kind === "focus-site") {
+      const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
       if (focusUlpins?.length && dataSourceRef.current) {
         const matched = dataSourceRef.current.entities.values.filter(entity => {
           const p = (entity.properties?.getValue?.() ?? {}) as Record<string, unknown>;
@@ -2138,13 +2154,13 @@ export function CesiumSpatialViewer({
         }
         void viewer.flyTo(dataSourceRef.current, {
           duration: 0.7,
-          offset: new HeadingPitchRange(0.22, -0.92, 260),
+          offset: new HeadingPitchRange(0.22, isMobile ? -0.75 : -0.92, isMobile ? 180 : 260),
         });
       } else {
         const defaultCenter = Cartesian3.fromDegrees(85.054779, 25.6124294, 0);
         activeFocusTargetRef.current = defaultCenter;
         viewer.camera.flyToBoundingSphere(new BoundingSphere(defaultCenter, 0), {
-          offset: new HeadingPitchRange(0.22, -1.12, 980),
+          offset: new HeadingPitchRange(0.22, isMobile ? -0.85 : -1.12, isMobile ? 480 : 980),
           duration: 0.7,
         });
       }

@@ -376,9 +376,9 @@ export function BuildingInformationPanel({
           IDENTIFICATION
         </h3>
         <div className="inspector-field-grid">
-          <div className="flex items-center justify-between inspector-field-row">
+          <div className="inspector-field-row">
             <span className="field-label">Building ID:</span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
               <span className={`field-value ${buildingId === notAvailable ? "text-slate-500 italic" : "font-mono text-cyan-200"}`}>
                 {buildingId}
               </span>
@@ -386,7 +386,7 @@ export function BuildingInformationPanel({
                 <button
                   type="button"
                   onClick={() => handleCopy(buildingId, "Building ID")}
-                  className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800"
+                  className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 shrink-0"
                   title="Copy ID"
                 >
                   <Copy size={10} />
@@ -394,9 +394,9 @@ export function BuildingInformationPanel({
               )}
             </div>
           </div>
-          <div className="flex items-center justify-between inspector-field-row">
+          <div className="inspector-field-row">
             <span className="field-label">3D ULPIN:</span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
               <span className={`field-value ${ulpin === notAvailable ? "text-slate-500 italic" : "font-mono text-cyan-300 font-bold"}`}>
                 {ulpin}
               </span>
@@ -404,7 +404,7 @@ export function BuildingInformationPanel({
                 <button
                   type="button"
                   onClick={() => handleCopy(ulpin, "3D ULPIN")}
-                  className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800"
+                  className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 shrink-0"
                   title="Copy 14-Digit 3D ULPIN"
                 >
                   <Copy size={10} />

@@ -853,7 +853,7 @@ export default function SpatialWorkspace() {
                 {/* Right: Storey Simulator Presets */}
                 <div className="flex flex-col gap-1.5 shrink-0 px-3.5 py-2 bg-slate-950/80 rounded-lg border border-slate-800/90">
                   <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Storey Levels:</span>
-                  <div className="flex gap-1">
+                  <div className="flex flex-wrap gap-1">
                     {[
                       { label: "Auto", count: null },
                       { label: "4L", count: 4 },

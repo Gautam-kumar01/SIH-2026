@@ -9562,33 +9562,35 @@ input[data-otp-input="true"]:focus,
    SIH-2026 Government 3D Building Inspection & Digital Twin GIS Styles
    ========================================================================== */
 
-/* 3D Building Unified Control Bar */
+/* 3D Building Unified Control Bar (Responsive Touch Rail) */
 .cesium-3d-building-control-bar {
   position: absolute;
-  top: 10px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 25;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 10px;
+  padding: 6px 12px;
   background: rgba(8, 20, 26, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(42, 212, 217, 0.32);
+  border: 1px solid rgba(42, 212, 217, 0.35);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 16px rgba(42, 212, 217, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 18px rgba(42, 212, 217, 0.15);
   max-width: calc(100% - 24px);
   width: max-content;
   flex-wrap: nowrap;
+  touch-action: pan-x;
 }
 
 .cesium-3d-building-control-bar .control-divider {
   width: 1px;
-  height: 18px;
-  background: rgba(204, 237, 232, 0.15);
-  margin: 0 2px;
+  height: 20px;
+  background: rgba(204, 237, 232, 0.2);
+  margin: 0 3px;
+  flex-shrink: 0;
 }
 
 .cesium-3d-building-control-bar .mode-pill-group,
@@ -9596,11 +9598,12 @@ input[data-otp-input="true"]:focus,
 .cesium-3d-building-control-bar .tools-pill-group {
   display: flex;
   align-items: center;
-  gap: 3px;
-  background: rgba(14, 28, 36, 0.75);
-  padding: 3px 4px;
+  gap: 4px;
+  background: rgba(14, 28, 36, 0.85);
+  padding: 4px 6px;
   border-radius: 8px;
-  border: 1px solid rgba(204, 237, 232, 0.1);
+  border: 1px solid rgba(204, 237, 232, 0.12);
+  flex-shrink: 0;
 }
 
 .cesium-3d-building-control-bar .mode-label {
@@ -9608,8 +9611,9 @@ input[data-otp-input="true"]:focus,
   font-weight: 700;
   color: #748a85;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0 4px;
+  letter-spacing: 0.08em;
+  padding: 0 5px;
+  flex-shrink: 0;
 }
 
 .cesium-3d-building-control-bar .mode-btn,
@@ -9617,70 +9621,72 @@ input[data-otp-input="true"]:focus,
 .cesium-3d-building-control-bar .tool-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  font-size: 10.5px;
+  gap: 5px;
+  padding: 5px 9px;
+  font-size: 11px;
   font-weight: 600;
   color: #94a3b8;
   background: transparent;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.16s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .cesium-3d-building-control-bar .mode-btn:hover,
 .cesium-3d-building-control-bar .cam-btn:hover,
 .cesium-3d-building-control-bar .tool-btn:hover {
   color: #e2fdfd;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 .cesium-3d-building-control-bar .mode-btn.active {
   color: #041920;
   background: linear-gradient(135deg, #2ad4d9, #38bdf8);
   font-weight: 700;
-  box-shadow: 0 0 10px rgba(42, 212, 217, 0.35);
+  box-shadow: 0 0 12px rgba(42, 212, 217, 0.4);
 }
 
 .cesium-3d-building-control-bar .cam-btn.active,
 .cesium-3d-building-control-bar .tool-btn.active {
   color: #2ad4d9;
-  background: rgba(42, 212, 217, 0.18);
+  background: rgba(42, 212, 217, 0.2);
   font-weight: 700;
-  border: 1px solid rgba(42, 212, 217, 0.35);
+  border: 1px solid rgba(42, 212, 217, 0.4);
 }
 
 .cesium-3d-building-control-bar .cam-btn.active-orbit {
   color: #38bdf8;
-  background: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.22);
   border: 1px solid #38bdf8;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
 }
 
 .cesium-3d-building-control-bar .compass-reset {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   color: #7dd3fc;
 }
 
-/* Hover Inspection Tooltip (Cursor Attached) */
+/* Hover Inspection Tooltip (Cursor Attached & Viewport-Safe) */
 .cesium-hover-inspector-tooltip {
   position: absolute;
   z-index: 50;
   pointer-events: none;
-  min-width: 180px;
-  max-width: 260px;
-  background: rgba(6, 18, 24, 0.94);
+  min-width: 190px;
+  max-width: min(290px, calc(100vw - 28px));
+  background: rgba(6, 18, 24, 0.96);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(42, 212, 217, 0.45);
-  border-radius: 9px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6), 0 0 14px rgba(42, 212, 217, 0.2);
-  padding: 8px 10px;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65), 0 0 16px rgba(42, 212, 217, 0.2);
+  padding: 10px 12px;
   animation: fadeInTooltip 0.15s ease-out;
   transform: translate3d(0, 0, 0);
+  word-break: break-word;
 }
 
 @keyframes fadeInTooltip {
@@ -9697,53 +9703,58 @@ input[data-otp-input="true"]:focus,
 .cesium-hover-inspector-tooltip .tooltip-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding-bottom: 6px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid rgba(204, 237, 232, 0.12);
-  font-size: 11.5px;
+  gap: 7px;
+  padding-bottom: 7px;
+  margin-bottom: 7px;
+  border-bottom: 1px solid rgba(204, 237, 232, 0.14);
+  font-size: 12px;
   color: #f1f5f9;
 }
 
 .cesium-hover-inspector-tooltip .tooltip-body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .cesium-hover-inspector-tooltip .tooltip-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 10.5px;
+  gap: 10px;
+  font-size: 11px;
 }
 
 .cesium-hover-inspector-tooltip .tooltip-row .label {
   color: #748a85;
   font-weight: 500;
+  font-size: 10.5px;
 }
 
 .cesium-hover-inspector-tooltip .tooltip-row .val {
   color: #e2fdfd;
   font-weight: 600;
   text-align: right;
+  overflow-wrap: anywhere;
 }
 
 /* Vertical Cutaway Height Elevation Ruler */
 .cesium-vertical-cutaway-ruler {
   position: absolute;
-  top: 68px;
+  top: 72px;
   right: 14px;
   z-index: 20;
-  width: 240px;
-  background: rgba(8, 20, 26, 0.94);
+  width: 250px;
+  max-width: calc(100vw - 28px);
+  max-height: calc(100% - 100px);
+  overflow-y: auto;
+  background: rgba(8, 20, 26, 0.95);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(42, 212, 217, 0.35);
+  border: 1px solid rgba(42, 212, 217, 0.38);
   border-radius: 12px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 18px rgba(42, 212, 217, 0.15);
-  padding: 12px;
+  padding: 14px;
   animation: slideInRuler 0.2s ease-out;
 }
 
@@ -9762,22 +9773,22 @@ input[data-otp-input="true"]:focus,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 8px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid rgba(42, 212, 217, 0.2);
+  padding-bottom: 9px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(42, 212, 217, 0.22);
 }
 
 .cesium-vertical-cutaway-ruler .cutaway-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cesium-vertical-cutaway-ruler .ruler-level {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 11px;
+  gap: 9px;
+  font-size: 11.5px;
 }
 
 .cesium-vertical-cutaway-ruler .ruler-level.roof .level-badge {
@@ -9793,12 +9804,12 @@ input[data-otp-input="true"]:focus,
 }
 
 .cesium-vertical-cutaway-ruler .ruler-level .level-badge {
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 5px;
-  min-width: 52px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  min-width: 56px;
   text-align: center;
 }
 
@@ -9806,12 +9817,12 @@ input[data-otp-input="true"]:focus,
   flex: 1;
   height: 1px;
   background: rgba(204, 237, 232, 0.2);
-  border-top: 1px dashed rgba(204, 237, 232, 0.3);
+  border-top: 1px dashed rgba(204, 237, 232, 0.35);
 }
 
 .cesium-vertical-cutaway-ruler .ruler-level .level-val {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: #e2fdfd;
 }
@@ -9819,34 +9830,34 @@ input[data-otp-input="true"]:focus,
 .cesium-vertical-cutaway-ruler .ruler-floors-stack {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 6px 0 6px 20px;
-  border-left: 2px solid rgba(42, 212, 217, 0.4);
-  margin-left: 25px;
+  gap: 5px;
+  padding: 8px 0 8px 20px;
+  border-left: 2px solid rgba(42, 212, 217, 0.45);
+  margin-left: 26px;
 }
 
 .cesium-vertical-cutaway-ruler .ruler-floor-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 8px;
-  background: rgba(15, 30, 39, 0.7);
-  border: 1px solid rgba(204, 237, 232, 0.1);
-  border-radius: 6px;
+  padding: 5px 9px;
+  background: rgba(15, 30, 39, 0.75);
+  border: 1px solid rgba(204, 237, 232, 0.12);
+  border-radius: 7px;
   color: #cbd5e1;
-  font-size: 10.5px;
+  font-size: 11px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.16s ease;
 }
 
 .cesium-vertical-cutaway-ruler .ruler-floor-item:hover {
-  background: rgba(42, 212, 217, 0.15);
-  border-color: rgba(42, 212, 217, 0.4);
+  background: rgba(42, 212, 217, 0.18);
+  border-color: rgba(42, 212, 217, 0.45);
   color: #ffffff;
 }
 
 .cesium-vertical-cutaway-ruler .ruler-floor-item.selected {
-  background: linear-gradient(135deg, rgba(42, 212, 217, 0.3), rgba(56, 189, 248, 0.3));
+  background: linear-gradient(135deg, rgba(42, 212, 217, 0.35), rgba(56, 189, 248, 0.35));
   border-color: #38bdf8;
   color: #38bdf8;
   font-weight: 700;
@@ -9855,12 +9866,12 @@ input[data-otp-input="true"]:focus,
 .cesium-vertical-cutaway-ruler .ruler-no-floors {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px;
-  background: rgba(15, 30, 39, 0.6);
-  border: 1px dashed rgba(204, 237, 232, 0.15);
-  border-radius: 6px;
-  font-size: 10px;
+  gap: 7px;
+  padding: 9px;
+  background: rgba(15, 30, 39, 0.65);
+  border: 1px dashed rgba(204, 237, 232, 0.18);
+  border-radius: 7px;
+  font-size: 10.5px;
   color: #94a3b8;
   margin: 4px 0;
 }
@@ -9869,25 +9880,25 @@ input[data-otp-input="true"]:focus,
 .cesium-height-legend,
 .cesium-footprint-legend {
   position: absolute;
-  bottom: 38px;
+  bottom: 40px;
   left: 14px;
   z-index: 15;
-  background: rgba(8, 20, 26, 0.9);
+  background: rgba(8, 20, 26, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(42, 212, 217, 0.28);
+  border: 1px solid rgba(42, 212, 217, 0.3);
   border-radius: 10px;
-  padding: 8px 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 10.5px;
+  gap: 7px;
+  font-size: 11px;
 }
 
 .cesium-height-legend .legend-title,
 .cesium-footprint-legend .legend-title {
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   color: #2ad4d9;
@@ -9898,27 +9909,27 @@ input[data-otp-input="true"]:focus,
 .cesium-footprint-legend .legend-items {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .cesium-height-legend .legend-item,
 .cesium-footprint-legend .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   color: #cbd5e1;
 }
 
 .cesium-height-legend .color-swatch {
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
   border-radius: 3px;
 }
 
 .cesium-footprint-legend .line-swatch {
-  width: 16px;
+  width: 18px;
   height: 0;
-  border-top-width: 2px;
+  border-top-width: 2.5px;
   border-top-style: solid;
 }
 
@@ -9926,17 +9937,18 @@ input[data-otp-input="true"]:focus,
 .inspector-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .inspector-section-title {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   color: #2ad4d9;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -9945,30 +9957,284 @@ input[data-otp-input="true"]:focus,
 .inspector-field-grid {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  background: rgba(14, 26, 33, 0.6);
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(204, 237, 232, 0.08);
+  gap: 7px;
+  background: rgba(14, 26, 33, 0.65);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(204, 237, 232, 0.1);
 }
 
 .inspector-field-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 11px;
+  gap: 12px;
+  font-size: 11.5px;
+  flex-wrap: wrap;
 }
 
 .inspector-field-row .field-label {
   color: #748a85;
   font-weight: 500;
-  font-size: 10.5px;
+  font-size: 11px;
+  flex-shrink: 0;
+  min-width: 110px;
 }
 
 .inspector-field-row .field-value {
   text-align: right;
+  flex: 1;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
+
+/* ==========================================================================
+   Comprehensive Responsive System (Mobile, Tablet & Desktop Spacing)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .spatial-model-layout {
+    grid-template-columns: 1fr;
+  }
+  .spatial-model-stage {
+    min-height: 580px;
+  }
+  .spatial-stage-vignette {
+    opacity: 0.25;
+  }
+  .spatial-dossier {
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid rgba(204, 237, 232, 0.1);
+    border-left: 0;
+    padding: 16px;
+    gap: 16px;
+  }
+  .lower-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .area-search-panel {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 3D Stage Vignette & Grid - Keep Map Bright & Clear */
+  .spatial-stage-vignette {
+    display: none !important;
+  }
+  .spatial-stage-grid {
+    opacity: 0.12 !important;
+  }
+
+  /* 3D Map Control Bar - Mobile Touch Scrollable Rail */
+  .cesium-3d-building-control-bar {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    transform: none;
+    width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    justify-content: flex-start;
+    padding: 5px 8px;
+    gap: 5px;
+    border-radius: 10px;
+    z-index: 15;
+  }
+  .cesium-3d-building-control-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .cesium-3d-building-control-bar .mode-pill-group,
+  .cesium-3d-building-control-bar .camera-pill-group,
+  .cesium-3d-building-control-bar .tools-pill-group {
+    padding: 3px 4px;
+    gap: 3px;
+  }
+  .cesium-3d-building-control-bar .mode-btn,
+  .cesium-3d-building-control-bar .cam-btn,
+  .cesium-3d-building-control-bar .tool-btn {
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+
+  /* 3D Cutaway Ruler on Mobile */
+  .cesium-vertical-cutaway-ruler {
+    top: 54px;
+    right: 8px;
+    left: 8px;
+    width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
+    max-height: 50vh;
+    z-index: 18;
+  }
+
+  /* Map Legends on Mobile */
+  .cesium-height-legend,
+  .cesium-footprint-legend {
+    bottom: 12px;
+    left: 8px;
+    max-width: calc(100% - 16px);
+    padding: 8px 10px;
+    font-size: 10px;
+    z-index: 14;
+  }
+
+  /* Cesium Context Controls (Measure Tools & OSM Toggle) - Non-Intrusive Bottom Dock */
+  .spatial-model-stage .cesium-context-controls,
+  .cesium-context-controls {
+    top: auto !important;
+    bottom: 10px !important;
+    right: 8px !important;
+    left: auto !important;
+    max-width: calc(100% - 16px);
+    font-size: 10px;
+    z-index: 14;
+    background: rgba(8, 20, 26, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(42, 212, 217, 0.25);
+    border-radius: 8px;
+    padding: 4px 6px;
+    gap: 4px;
+  }
+  .cesium-context-controls section {
+    padding: 2px 4px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  .cesium-context-controls section > span {
+    display: none;
+  }
+  .cesium-context-controls button {
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+
+  /* OpenStreetMap Attribution - Subtle & Low Profile */
+  .cesium-osm-attribution {
+    position: absolute;
+    bottom: 6px;
+    left: 8px;
+    right: auto;
+    top: auto;
+    font-size: 8px;
+    padding: 2px 6px;
+    background: rgba(5, 15, 20, 0.65);
+    border-radius: 4px;
+    max-width: 50%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    opacity: 0.65;
+    z-index: 8;
+  }
+
+  /* OSM Building Inspector Card on Mobile */
+  .cesium-osm-building-inspector {
+    position: absolute;
+    top: auto;
+    bottom: 48px;
+    left: 8px;
+    right: 8px;
+    width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
+    max-height: 40vh;
+    overflow-y: auto;
+    background: rgba(8, 20, 26, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(42, 212, 217, 0.35);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 11px;
+    z-index: 20;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Workspace Layout on Mobile */
+  .spatial-workspace-rail {
+    transform: translateX(-100%);
+  }
+  .spatial-workspace-main {
+    margin-left: 0;
+  }
+  .spatial-workspace-topbar {
+    padding: 0 12px;
+    min-height: 60px;
+    gap: 8px;
+  }
+  .spatial-model-stage {
+    min-height: 520px;
+  }
+  .spatial-dossier {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 12px;
+  }
+  .spatial-below-map {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .building-information-panel {
+    padding: 14px;
+    gap: 14px;
+  }
+  .building-information-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .inspector-field-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .inspector-field-row .field-value {
+    text-align: left;
+    width: 100%;
+  }
+
+  /* Operations & Stats Grid */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .metric-card {
+    padding: 12px 14px;
+  }
+
+  /* Dialogs and Editors */
+  .editor-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .editor-dialog {
+    padding: 60px 16px 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .spatial-model-stage {
+    min-height: 490px;
+  }
+  .spatial-workspace-topbar form {
+    min-width: 0;
+    flex: 1;
+  }
+  .brand-lockup strong {
+    font-size: 14px;
+  }
+}
+
 
 
 
