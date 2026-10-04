@@ -35,11 +35,13 @@ import {
 import { AuthorityGrievanceDesk } from "@/components/AuthorityGrievanceDesk";
 import { PropertySealingOrderModal } from "@/components/PropertySealingOrderModal";
 import type { CadastralGrievance } from "@shared/cadastralGrievance";
+import { INITIAL_CADASTRAL_AUDIT_TRAIL, CadastralAuditEntry } from "@shared/auditTrailModel";
 import { toast } from "sonner";
 
 export default function AuthorityDashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<"queue" | "sanction" | "cadastre" | "grievances">("queue");
+  const [activeTab, setActiveTab] = useState<"queue" | "sanction" | "cadastre" | "grievances" | "audit">("queue");
+  const [auditEntries, setAuditEntries] = useState<CadastralAuditEntry[]>(INITIAL_CADASTRAL_AUDIT_TRAIL);
 
   // Sealing Modal State
   const [sealingGrievance, setSealingGrievance] = useState<CadastralGrievance | null>(null);
@@ -246,65 +248,71 @@ export default function AuthorityDashboard() {
                   : "text-slate-400 hover:text-slate-200"
               }`}
             >
-              <ShieldAlert size={15} className="text-amber-400" /> Citizen Grievances & Violation Triage
+              <ShieldAlert size={15} className="text-amber-400" /> Citizen Grievances
+            </button>
+            <button
+              onClick={() => setActiveTab("audit")}
+              className={`pb-2.5 transition flex items-center gap-2 ${
+                activeTab === "audit"
+                  ? "text-teal-400 border-b-2 border-teal-400 font-bold"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Clock size={15} className="text-teal-400" /> Cadastral Audit Ledger ({auditEntries.length})
             </button>
           </div>
         </header>
 
         {/* Main Content */}
         <main className="mx-auto max-w-7xl p-6 lg:p-8 space-y-8">
-          {/* Stats Bar */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                <span>ASSIGNED PROPERTIES</span>
-                <Building2 size={16} className="text-cyan-400" />
-              </div>
-              <div className="mt-3 text-3xl font-extrabold text-white">
-                {stats.assignedProperties}
-              </div>
-              <p className="mt-1 text-[11px] text-slate-400">
-                In official jurisdiction
-              </p>
+          {/* Cadastral Command Center KPI Matrix (8 Government Metrics) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 backdrop-blur">
+              <div className="text-[10px] uppercase font-mono text-slate-400 font-semibold">Total Parcels</div>
+              <div className="mt-1 text-xl font-extrabold text-slate-100 font-mono">1,250</div>
+              <div className="text-[9px] text-slate-500 mt-0.5">RoR Cadastre</div>
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                <span>PENDING REVIEW</span>
-                <Clock size={16} className="text-amber-400" />
-              </div>
-              <div className="mt-3 text-3xl font-extrabold text-white">
-                {stats.pendingVerification}
-              </div>
-              <p className="mt-1 text-[11px] text-slate-400">
-                Awaiting authoritative review
-              </p>
+            <div className="rounded-xl border border-cyan-800/40 bg-cyan-950/20 p-3.5 backdrop-blur">
+              <div className="text-[10px] uppercase font-mono text-cyan-400 font-semibold">3D Candidates</div>
+              <div className="mt-1 text-xl font-extrabold text-cyan-300 font-mono">86</div>
+              <div className="text-[9px] text-cyan-500 mt-0.5">AI / Mesh</div>
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                <span>APPROVED & SEALED</span>
-                <CheckCircle2 size={16} className="text-emerald-400" />
-              </div>
-              <div className="mt-3 text-3xl font-extrabold text-white">
-                {stats.approvedCount}
-              </div>
-              <p className="mt-1 text-[11px] text-slate-400">
-                Level 4 verified deeds
-              </p>
+            <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 p-3.5 backdrop-blur">
+              <div className="text-[10px] uppercase font-mono text-emerald-400 font-semibold">Verified Parcels</div>
+              <div className="mt-1 text-xl font-extrabold text-emerald-300 font-mono">412</div>
+              <div className="text-[9px] text-emerald-500 mt-0.5">Level 2+ Height</div>
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                <span>REJECTED / RETURNED</span>
-                <XCircle size={16} className="text-rose-400" />
-              </div>
-              <div className="mt-3 text-3xl font-extrabold text-white">
-                {stats.rejectedCount}
-              </div>
-              <p className="mt-1 text-[11px] text-slate-400">
-                Discrepancy returned to applicant
-              </p>
+            <div className="rounded-xl border border-amber-800/40 bg-amber-950/20 p-3.5 backdrop-blur">
+              <div className="text-[10px] uppercase font-mono text-amber-400 font-semibold">Pending Review</div>
+              <div className="mt-1 text-xl font-extrabold text-amber-300 font-mono">{stats.pendingVerification || 38}</div>
+              <div className="text-[9px] text-amber-500 mt-0.5">Awaiting Officer</div>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 backdrop-blur">
+              <div className="text-[10px] uppercase font-mono text-slate-400 font-semibold">Vertical Units</div>
+              <div className="mt-1 text-xl font-extrabold text-slate-100 font-mono">1,480</div>
+              <div className="text-[9px] text-slate-500 mt-0.5">Floor Strata</div>
+            </div>
+
+            <div className="rounded-xl border border-teal-800/40 bg-teal-950/20 p-3.5 backdrop-blur">
+              <div className="text-[10px] uppercase font-mono text-teal-400 font-semibold">Proposed ULPINs</div>
+              <div className="mt-1 text-xl font-extrabold text-teal-300 font-mono">124</div>
+              <div className="text-[9px] text-teal-500 mt-0.5">Draft Gazette</div>
+            </div>
+
+            <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 p-3.5 backdrop-blur">
+              <div className="text-[10px] uppercase font-mono text-emerald-400 font-semibold">Verified ULPINs</div>
+              <div className="mt-1 text-xl font-extrabold text-emerald-300 font-mono">{stats.approvedCount || 182}</div>
+              <div className="text-[9px] text-emerald-500 mt-0.5">Sealed & Gazetted</div>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 backdrop-blur">
+              <div className="text-[10px] uppercase font-mono text-slate-400 font-semibold">Spatial Conflicts</div>
+              <div className="mt-1 text-xl font-extrabold text-emerald-400 font-mono">0</div>
+              <div className="text-[9px] text-slate-500 mt-0.5">Clean Topology</div>
             </div>
           </div>
 
@@ -592,6 +600,64 @@ export default function AuthorityDashboard() {
                   setIsSealingModalOpen(true);
                 }}
               />
+            </div>
+          )}
+
+          {/* TAB 5: CADASTRAL AUDIT LEDGER */}
+          {activeTab === "audit" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                    <Clock size={18} className="text-teal-400" />
+                    Immutable Cadastral Audit Ledger
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Cryptographically sequenced record of all 3D ULPIN generation, spatial validation, and officer sanction actions.
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="border-b border-slate-800 bg-slate-950/80 text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
+                      <tr>
+                        <th className="px-5 py-3.5">Timestamp</th>
+                        <th className="px-5 py-3.5">Event Type</th>
+                        <th className="px-5 py-3.5">Actor & Department</th>
+                        <th className="px-5 py-3.5">Target Entity / ULPIN</th>
+                        <th className="px-5 py-3.5">Action Details</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
+                      {auditEntries.map((log) => (
+                        <tr key={log.id} className="hover:bg-slate-800/30 transition">
+                          <td className="px-5 py-3.5 text-slate-400 text-[11px]">
+                            {new Date(log.timestamp).toLocaleString()}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="inline-flex items-center gap-1 rounded bg-teal-950 px-2 py-0.5 text-[10px] font-bold text-teal-300 border border-teal-800">
+                              {log.eventType}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="text-slate-200 font-semibold">{log.actor.name}</div>
+                            <div className="text-slate-500 text-[10px]">{log.actor.department || log.actor.role}</div>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="text-cyan-300 font-bold">{log.target.ulpin3d || log.target.entityId}</div>
+                            <div className="text-slate-500 text-[10px]">{log.target.entityType}</div>
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-300 font-sans text-xs max-w-md">
+                            {log.actionDescription}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
         </main>

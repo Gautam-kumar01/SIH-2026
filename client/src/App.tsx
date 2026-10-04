@@ -13,6 +13,7 @@ import SpatialWorkspace from "./pages/SpatialWorkspace";
 import SyntheticGcpDemo from "./pages/SyntheticGcpDemo";
 import UlpInRegistry from "./pages/UlpInRegistry";
 import FloorExplorer from "./pages/FloorExplorer";
+import DemoPage from "./pages/DemoPage";
 
 // Admin & Staff Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -48,6 +49,7 @@ function Router() {
 
       {/* 3D GIS & Registry */}
       <Route path="/workspace" component={SpatialWorkspace} />
+      <Route path="/demo" component={DemoPage} />
       <Route path="/floor-explorer" component={FloorExplorer} />
       <Route path="/property-volumes" component={PropertyVolumes} />
       <Route path="/ulpin-registry" component={UlpInRegistry} />

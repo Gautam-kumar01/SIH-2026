@@ -28,6 +28,8 @@ import {
   type FloorUnitCadastre,
 } from "@shared/floorCadastre";
 import { FloorUnitInspectorDrawer } from "@/components/FloorUnitInspectorDrawer";
+import { CadastreTransformationStepper } from "@/components/CadastreTransformationStepper";
+import { SYSTEM_TRUST_STATEMENT } from "@shared/ulpin3dGenerator";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -45,6 +47,7 @@ import {
   ShieldAlert,
   Upload,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useSearch } from "wouter";
@@ -746,14 +749,30 @@ export default function SpatialWorkspace() {
             </datalist>
             <button type="submit">Locate</button>
           </form>
-          <button
-            className="workspace-home-button"
-            type="button"
-            onClick={() => setLocation("/dashboard")}
-          >
-            <ArrowLeft size={15} /> Dashboard
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="px-2.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-sm transition-all"
+              type="button"
+              onClick={() => setLocation("/demo")}
+              title="Launch Guided 15-Step SIH Judge Demo"
+            >
+              <Sparkles size={13} />
+              <span>SIH Demo Mode</span>
+            </button>
+            <button
+              className="workspace-home-button"
+              type="button"
+              onClick={() => setLocation("/dashboard")}
+            >
+              <ArrowLeft size={15} /> Dashboard
+            </button>
+          </div>
         </header>
+
+        {/* 2D to 3D Cadastre Evolution Stepper */}
+        <div className="px-4 pt-3 pb-1">
+          <CadastreTransformationStepper compact={true} />
+        </div>
 
         <div className="spatial-model-layout">
           <div className="spatial-map-column">
